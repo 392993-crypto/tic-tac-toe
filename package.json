@@ -12,5 +12,21 @@
   "devDependencies": {
     "typescript": "~5.9.2",
     "prettier": "^3.8.1"
-  }
+  },
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/392993-crypto/tic-tac-toe.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/392993-crypto/tic-tac-toe/issues"
+  },
+  "homepage": "https://github.com/392993-crypto/tic-tac-toe#readme"
 }
