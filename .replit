@@ -10,6 +10,7 @@ env = { "CI" = "true" }
 
 [workflows]
 runButton = "Project"
+runButtonColor = "#FF8C00"
 
 [agent]
 stack = "PNPM_WORKSPACE"
