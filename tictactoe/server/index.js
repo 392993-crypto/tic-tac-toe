@@ -5,54 +5,47 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse incoming JSON data
 app.use(express.json());
 
-// Tell Express to serve your static files (HTML, CSS, JS) from the root folder
-app.use(express.static(__dirname));
+// Point this to your 'public' folder where your HTML/CSS/JS live
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Set up the simple JSON database
 const dataDir = path.join(__dirname, 'data');
 const usersFilePath = path.join(dataDir, 'users.json');
 
-// Auto-create the data folder and users.json file if they don't exist yet
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
-}
-if (!fs.existsSync(usersFilePath)) {
-    fs.writeFileSync(usersFilePath, JSON.stringify([]));
-}
+// Ensure data directory and file exist
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+if (!fs.existsSync(usersFilePath)) fs.writeFileSync(usersFilePath, JSON.stringify([]));
 
-// The Registration Endpoint
+// --- AUTH ROUTES ---
+
+// Registration
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ message: 'Username and password required.' });
 
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required.' });
-    }
+    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
+    if (users.some(u => u.username === username)) return res.status(409).json({ message: 'Username exists.' });
 
-    try {
-        const usersData = fs.readFileSync(usersFilePath, 'utf8');
-        const users = JSON.parse(usersData);
+    users.push({ username, password });
+    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+    res.status(201).json({ message: 'Registration successful!' });
+});
 
-        // Check if user exists
-        if (users.some(user => user.username === username)) {
-            return res.status(409).json({ message: 'Username already exists.' });
-        }
+// Login (The missing piece!)
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
 
-        // Save new user (plain text password as requested for this project)
-        users.push({ username, password });
-        fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+    const user = users.find(u => u.username === username && u.password === password);
 
-        res.status(201).json({ message: 'Registration successful!' });
-
-    } catch (error) {
-        console.error('Database error:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+    if (user) {
+        res.status(200).json({ message: 'Login successful!', username: user.username });
+    } else {
+        res.status(401).json({ message: 'Invalid credentials.' });
     }
 });
 
-// Start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
