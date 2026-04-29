@@ -1,43 +1,33 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('login-form');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome Back</h2>
+        <p>Log in to play Tic Tac Toe</p>
 
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            // Prevent the default form submission behavior (page reload)
-            e.preventDefault();
+        <form action="/login" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
 
-            // Grab the input values
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-            try {
-                // Send a POST request to your backend auth route. 
-                // Adjust '/auth/login' if your Express route prefix is different (e.g., '/api/auth/login')
-                const response = await fetch('/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Optional but recommended: Save the username to localStorage 
-                    // so your frontend knows who is logged in for the Game and Stats pages
-                    localStorage.setItem('currentUser', username);
-                    
-                    // Redirect to the game page!
-                    window.location.href = 'game.html';
-                } else {
-                    // Show whatever error message your Express backend sends (e.g., "User not found")
-                    alert(data.message || 'Invalid username or password.');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                alert('A network error occurred. Please try again.');
-            }
-        });
-    }
-});
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="/register">Sign up here</a></p>
+        </div>
+    </div>
+</body>
+</html>
