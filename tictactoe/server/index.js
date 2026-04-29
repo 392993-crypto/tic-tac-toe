@@ -49,3 +49,24 @@ app.post('/api/login', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+const express = require('express');
+const path = require('path');
+const authRoutes = require('./routes/auth'); // Import your routes
+
+const app = express();
+
+// Middleware to parse form data
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Tell Express where the static files (CSS, JS, raw HTML) live
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Hook up the auth router
+app.use('/', authRoutes); 
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

@@ -51,3 +51,32 @@ router.post('/login', (req, res) => {
 });
 
 module.exports = router;
+
+const express = require('express');
+const path = require('path');
+const router = express.Router();
+
+// GET /login - Serve the login.html page from the public folder
+router.get('/login', (req, res) => {
+    // path.join goes up two levels from 'routes/auth.js' to find the 'public' folder
+    res.sendFile(path.join(__dirname, '../../public/login.html'));
+});
+
+// POST /login - Handle form submission
+router.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    // TODO for CP02: 
+    // Use your lib/store.js to open data/users.json and verify the user.
+    // If invalid, you might redirect back to /login with an error.
+
+    // If valid, redirect to the game board!
+    res.redirect('/game.html'); 
+});
+
+// You'll likely need this for CP02 as well
+router.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../public/register.html'));
+});
+
+module.exports = router;
