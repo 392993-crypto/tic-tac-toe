@@ -30,4 +30,20 @@ function checkResult() {
     // Only switch players if the game is still going
     currentPlayer = currentPlayer === "X" ? "O" : "X";
     statusElement.innerText = `Player ${currentPlayer}'s Turn`;
-}
+},
+
+if (data.success) {
+    // This will pop up a message box in your browser
+    alert("Success: Game saved to JSON!"); 
+} else {
+    alert("Backend error: " + data.message);
+},
+
+router.post('/save', (req, res) => {
+    const { gameId, winner, finalBoard } = req.body;
+
+    // Add this line so your terminal prints exactly what the frontend sent
+    console.log("RECEIVED SAVE REQUEST FOR GAME:", gameId, "WINNER:", winner); 
+
+    try {
+    // ... the rest of the try/catch block stays exactly the same
