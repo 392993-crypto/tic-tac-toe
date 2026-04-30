@@ -4,22 +4,13 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Tic Tac Toe - Play</title>
-        <link rel="stylesheet" href="style.css" />
-
         <style>
-            .game-container {
-                text-align: center;
-                margin-top: 50px;
-            }
-
             .board {
                 display: grid;
                 grid-template-columns: repeat(3, 100px);
                 grid-gap: 10px;
-                margin: 20px auto;
-                width: 320px;
+                margin: 20px 0;
             }
-
             .cell {
                 width: 100px;
                 height: 100px;
@@ -31,46 +22,9 @@
                 justify-content: center;
                 cursor: pointer;
             }
-
-            .cell:hover {
-                background: #e0e0e0;
-            }
-
-            .cell.taken {
-                cursor: not-allowed;
-            }
-
-            #status {
-                margin: 20px;
-                font-weight: bold;
-                font-size: 1.2rem;
-            }
-
-            #ai-comment {
-                font-style: italic;
-                color: #555;
-                min-height: 1.5em;
-                margin-bottom: 10px;
-            }
-
-            #game-settings {
-                background: #f9f9f9;
-                padding: 15px;
-                border-radius: 8px;
-                display: inline-block;
-                margin-bottom: 20px;
-            }
-
-            #ai-options {
-                margin-left: 15px;
-                padding-left: 15px;
-                border-left: 2px solid #ccc;
-            }
-            
-            select {
-                padding: 5px;
-                margin: 0 10px;
-            }
+            .cell.taken { cursor: not-allowed; }
+            #status { font-weight: bold; margin: 10px 0; }
+            #ai-comment { font-style: italic; color: #555; margin: 10px 0; }
         </style>
     </head>
 
@@ -81,51 +35,48 @@
             <a href="/logout">Logout</a>
         </nav>
 
-        <div class="game-container">
-            <h1>Tic Tac Toe</h1>
+        <h1>Tic Tac Toe</h1>
 
-            <div id="game-settings">
-                <label><strong>Mode:</strong></label>
-                <select id="game-mode" onchange="toggleAiSettings()">
-                    <option value="pvp">Human vs Human</option>
-                    <option value="pva">Human vs AI</option>
+        <div id="game-settings">
+            <label>Mode:</label>
+            <select id="game-mode" onchange="toggleAiSettings()">
+                <option value="pvp">Human vs Human</option>
+                <option value="pva">Human vs AI</option>
+            </select>
+
+            <span id="ai-options" style="display: none;">
+                <label>Difficulty:</label>
+                <select id="ai-difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="impossible" selected>Impossible</option>
                 </select>
 
-                <span id="ai-options" style="display: none;">
-                    <label>Difficulty:</label>
-                    <select id="ai-difficulty">
-                        <option value="easy">Easy</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
-
-                    <label>Personality:</label>
-                    <select id="ai-personality">
-                        <option value="sassy">Sassy</option>
-                        <option value="grumpy">Grumpy</option>
-                        <option value="supportive">Supportive</option>
-                    </select>
-                </span>
-            </div>
-
-            <div id="status">Player X's Turn</div>
-
-            <div id="ai-comment">Select "Human vs AI" to challenge the bot!</div>
-
-            <div class="board" id="board">
-                <div class="cell" data-index="0"></div>
-                <div class="cell" data-index="1"></div>
-                <div class="cell" data-index="2"></div>
-                <div class="cell" data-index="3"></div>
-                <div class="cell" data-index="4"></div>
-                <div class="cell" data-index="5"></div>
-                <div class="cell" data-index="6"></div>
-                <div class="cell" data-index="7"></div>
-                <div class="cell" data-index="8"></div>
-            </div>
-
-            <button onclick="resetGame()">Reset Game</button>
+                <label>Personality:</label>
+                <select id="ai-personality">
+                    <option value="sassy">Sassy</option>
+                    <option value="grumpy">Grumpy</option>
+                    <option value="supportive">Supportive</option>
+                </select>
+            </span>
         </div>
+
+        <div id="status">Player X's Turn</div>
+        <div id="ai-comment"></div>
+
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+
+        <button onclick="resetGame()">Reset Game</button>
 
         <script>
             let boardState = ["", "", "", "", "", "", "", "", ""];
@@ -142,76 +93,59 @@
                 [0, 4, 8], [2, 4, 6]
             ];
 
-            // Toggle visibility of AI settings
             function toggleAiSettings() {
                 const mode = document.getElementById("game-mode").value;
-                const aiOptions = document.getElementById("ai-options");
-                aiOptions.style.display = mode === "pva" ? "inline-block" : "none";
-                
-                if (mode === "pva") {
-                    aiCommentEl.innerText = "AI is ready to play.";
-                } else {
-                    aiCommentEl.innerText = "";
-                }
+                document.getElementById("ai-options").style.display = (mode === "pva") ? "inline" : "none";
             }
 
             function handleCellClick(e) {
                 const clickedCell = e.target;
                 if (!clickedCell.classList.contains('cell')) return;
-
                 const index = clickedCell.getAttribute("data-index");
+
                 if (boardState[index] !== "" || !gameActive) return;
 
                 makeMove(index);
 
-                // Check for AI turn
                 if (gameActive && document.getElementById("game-mode").value === "pva" && currentPlayer === "O") {
-                    setTimeout(aiMove, 600);
+                    setTimeout(aiMove, 500);
                 }
             }
 
             function makeMove(index) {
                 boardState[index] = currentPlayer;
-                const cell = document.querySelector(`[data-index="${index}"]`);
-                cell.innerText = currentPlayer;
-                cell.classList.add("taken");
-
+                document.querySelector(`[data-index="${index}"]`).innerText = currentPlayer;
+                document.querySelector(`[data-index="${index}"]`).classList.add("taken");
                 checkResult();
             }
 
             function checkResult() {
-                let roundWon = false;
-                for (let condition of winningConditions) {
-                    let a = boardState[condition[0]];
-                    let b = boardState[condition[1]];
-                    let c = boardState[condition[2]];
-                    if (a === "" || b === "" || c === "") continue;
-                    if (a === b && b === c) {
-                        roundWon = true;
-                        break;
-                    }
-                }
-
-                if (roundWon) {
+                let winner = checkWinnerRaw(boardState);
+                if (winner && winner !== "tie") {
                     statusElement.innerText = `Player ${currentPlayer} Wins!`;
                     gameActive = false;
                     saveGame();
                     return;
                 }
-
                 if (!boardState.includes("")) {
                     statusElement.innerText = "It's a Draw!";
                     gameActive = false;
                     saveGame();
                     return;
                 }
-
                 currentPlayer = currentPlayer === "X" ? "O" : "X";
                 statusElement.innerText = `Player ${currentPlayer}'s Turn`;
             }
 
             async function aiMove() {
-                aiCommentEl.innerText = "AI is thinking...";
+                const difficulty = document.getElementById("ai-difficulty").value;
+                const personality = document.getElementById("ai-personality").value;
+                aiCommentEl.innerText = "Thinking...";
+
+                let move;
+                if (difficulty === "impossible") {
+                    move = getBestMove(boardState);
+                }
 
                 try {
                     const res = await fetch("/api/ai", {
@@ -219,33 +153,85 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             board: boardState,
-                            difficulty: document.getElementById("ai-difficulty").value,
-                            personality: document.getElementById("ai-personality").value,
+                            difficulty,
+                            personality,
+                            suggestedMove: move
                         }),
                     });
-
                     const data = await res.json();
                     aiCommentEl.innerText = data.comment || "";
+                    const finalMove = (difficulty === "impossible") ? move : data.move;
 
-                    if (typeof data.move === "number" && boardState[data.move] === "") {
-                        makeMove(data.move);
+                    if (typeof finalMove === "number" && boardState[finalMove] === "") {
+                        makeMove(finalMove);
                     }
                 } catch (err) {
-                    console.error(err);
-                    aiCommentEl.innerText = "AI is feeling shy (error).";
+                    aiCommentEl.innerText = "AI Error.";
                 }
+            }
+
+            // Minimax Algorithm
+            function getBestMove(board) {
+                let bestScore = -Infinity;
+                let move;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "O";
+                        let score = minimax(board, 0, false);
+                        board[i] = "";
+                        if (score > bestScore) {
+                            bestScore = score;
+                            move = i;
+                        }
+                    }
+                }
+                return move;
+            }
+
+            const scores = { X: -10, O: 10, tie: 0 };
+            function minimax(board, depth, isMaximizing) {
+                let result = checkWinnerRaw(board);
+                if (result !== null) return scores[result];
+                if (isMaximizing) {
+                    let bestScore = -Infinity;
+                    for (let i = 0; i < 9; i++) {
+                        if (board[i] === "") {
+                            board[i] = "O";
+                            let score = minimax(board, depth + 1, false);
+                            board[i] = "";
+                            bestScore = Math.max(score, bestScore);
+                        }
+                    }
+                    return bestScore;
+                } else {
+                    let bestScore = Infinity;
+                    for (let i = 0; i < 9; i++) {
+                        if (board[i] === "") {
+                            board[i] = "X";
+                            let score = minimax(board, depth + 1, true);
+                            board[i] = "";
+                            bestScore = Math.min(score, bestScore);
+                        }
+                    }
+                    return bestScore;
+                }
+            }
+
+            function checkWinnerRaw(board) {
+                for (let condition of winningConditions) {
+                    const [a, b, c] = condition;
+                    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+                }
+                return board.includes("") ? null : "tie";
             }
 
             async function saveGame() {
                 const payload = {
                     board: boardState,
                     winner: currentPlayer,
-                    mode: document.getElementById("game-mode").value,
-                    difficulty: document.getElementById("ai-difficulty").value,
-                    personality: document.getElementById("ai-personality").value
+                    mode: document.getElementById("game-mode").value
                 };
-                console.log("Saving game data...", payload);
-                // fetch('/save-game', { method: 'POST', body: JSON.stringify(payload) });
+                console.log("Game Saved", payload);
             }
 
             function resetGame() {
@@ -253,12 +239,8 @@
                 gameActive = true;
                 currentPlayer = "X";
                 statusElement.innerText = "Player X's Turn";
-                aiCommentEl.innerText = document.getElementById("game-mode").value === "pva" ? "AI is ready." : "";
-
-                document.querySelectorAll(".cell").forEach((cell) => {
-                    cell.innerText = "";
-                    cell.classList.remove("taken");
-                });
+                aiCommentEl.innerText = "";
+                document.querySelectorAll(".cell").forEach(c => c.innerText = "");
             }
 
             boardElement.addEventListener("click", handleCellClick);
