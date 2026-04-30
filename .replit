@@ -10,7 +10,6 @@ env = { "CI" = "true" }
 
 [workflows]
 runButton = "Project"
-runButtonColor = "#FF8C00"
 
 [agent]
 stack = "PNPM_WORKSPACE"
@@ -19,19 +18,3 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
-[[ports]]
-localPort = 8081
-<<<<<<< HEAD
-externalPort = 80
-
-[[ports]]
-localPort = 20958
-externalPort = 3001
-=======
-externalPort = 80
->>>>>>> 38cbc364337f45c37fdd995c8eab70471c557526
