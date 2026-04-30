@@ -1,188 +1,237 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe - Play</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .game-container { text-align: center; margin-top: 50px; }
-        .board { 
-            display: grid; 
-            grid-template-columns: repeat(3, 100px); 
-            grid-gap: 10px; 
-            margin: 20px auto; 
-            width: 320px; 
-        }
-        .cell { 
-            width: 100px; 
-            height: 100px; 
-            background: #f0f0f0; 
-            border: 2px solid #333; 
-            font-size: 2.5rem; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-        }
-        .cell:hover { background: #e0e0e0; }
-        .cell.taken { cursor: not-allowed; }
-        #status { margin: 20px; font-weight: bold; font-size: 1.2rem; }
-        #ai-comment { font-style: italic; color: #555; min-height: 1.5em; }
-    </style>
-</head>
-<body>
-    <nav>
-        <a href="dashboard.html">Dashboard</a> | 
-        <a href="leaderboard.html">Leaderboard</a> | 
-        <a href="/logout">Logout</a>
-    </nav>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tic Tac Toe - Play</title>
+        <link rel="stylesheet" href="style.css" />
 
-    <div class="game-container">
-        <h1>Tic Tac Toe</h1>
-
-        <div id="game-settings">
-            <label>Mode:</label>
-            <select id="game-mode">
-                <option value="pvp">Human vs Human</option>
-                <option value="pva">Human vs AI</option>
-            </select>
-        </div>
-
-        <div id="status">Player X's Turn</div>
-        <div id="ai-comment"></div>
-
-        <div class="board" id="board">
-            <div class="cell" data-index="0"></div>
-            <div class="cell" data-index="1"></div>
-            <div class="cell" data-index="2"></div>
-            <div class="cell" data-index="3"></div>
-            <div class="cell" data-index="4"></div>
-            <div class="cell" data-index="5"></div>
-            <div class="cell" data-index="6"></div>
-            <div class="cell" data-index="7"></div>
-            <div class="cell" data-index="8"></div>
-        </div>
-
-        <button onclick="resetGame()">Reset Game</button>
-    </div>
-
-    <script>
-        let boardState = ["", "", "", "", "", "", "", "", ""];
-        let currentPlayer = "X";
-        let gameActive = true;
-
-        const boardElement = document.getElementById('board');
-        const statusElement = document.getElementById('status');
-
-        const winningConditions = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
-            [0, 4, 8], [2, 4, 6]             // Diagonals
-        ];
-
-        function handleCellClick(e) {
-            const clickedCell = e.target;
-            const index = clickedCell.getAttribute('data-index');
-
-            if (boardState[index] !== "" || !gameActive) return;
-
-            makeMove(index);
-
-            // If it's AI mode and game is still active, trigger AI
-            if (gameActive && document.getElementById('game-mode').value === 'pva' && currentPlayer === 'O') {
-                setTimeout(aiMove, 500);
+        <style>
+            .game-container {
+                text-align: center;
+                margin-top: 50px;
             }
-        }
 
-        function makeMove(index) {
-            boardState[index] = currentPlayer;
-            const cell = document.querySelector(`[data-index="${index}"]`);
-            cell.innerText = currentPlayer;
-            cell.classList.add('taken');
+            .board {
+                display: grid;
+                grid-template-columns: repeat(3, 100px);
+                grid-gap: 10px;
+                margin: 20px auto;
+                width: 320px;
+            }
 
-            checkResult();
-        }
+            .cell {
+                width: 100px;
+                height: 100px;
+                background: #f0f0f0;
+                border: 2px solid #333;
+                font-size: 2.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
 
-        function checkResult() {
-            let roundWon = false;
-            for (let condition of winningConditions) {
-                let a = boardState[condition[0]];
-                let b = boardState[condition[1]];
-                let c = boardState[condition[2]];
-                if (a === '' || b === '' || c === '') continue;
-                if (a === b && b === c) {
-                    roundWon = true;
-                    break;
+            .cell:hover {
+                background: #e0e0e0;
+            }
+
+            .cell.taken {
+                cursor: not-allowed;
+            }
+
+            #status {
+                margin: 20px;
+                font-weight: bold;
+                font-size: 1.2rem;
+            }
+
+            #ai-comment {
+                font-style: italic;
+                color: #555;
+                min-height: 1.5em;
+            }
+        </style>
+    </head>
+
+    <body>
+        <nav>
+            <a href="dashboard.html">Dashboard</a> |
+            <a href="leaderboard.html">Leaderboard</a> |
+            <a href="/logout">Logout</a>
+        </nav>
+
+        <div class="game-container">
+            <h1>Tic Tac Toe</h1>
+
+            <div id="game-settings">
+                <label>Mode:</label>
+                <select id="game-mode">
+                    <option value="pvp">Human vs Human</option>
+                    <option value="pva">Human vs AI</option>
+                </select>
+            </div>
+
+            <div id="status">Player X's Turn</div>
+
+            <div id="ai-comment"></div>
+
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+            </div>
+
+            <button onclick="resetGame()">Reset Game</button>
+        </div>
+
+        <script>
+            let boardState = ["", "", "", "", "", "", "", "", ""];
+            let currentPlayer = "X";
+            let gameActive = true;
+
+            const boardElement = document.getElementById("board");
+            const statusElement = document.getElementById("status");
+
+            const winningConditions = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8], // Rows
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8], // Cols
+                [0, 4, 8],
+                [2, 4, 6], // Diagonals
+            ];
+
+            function handleCellClick(e) {
+                const clickedCell = e.target;
+
+                // FIX: Ensure the user clicked a cell, not the background gaps
+                if (!clickedCell.classList.contains('cell')) return;
+
+                const index = clickedCell.getAttribute("data-index");
+
+                if (boardState[index] !== "" || !gameActive) return;
+
+                makeMove(index);
+
+                // If it's AI mode and game is still active, trigger AI
+                if (
+                    gameActive &&
+                    document.getElementById("game-mode").value === "pva" &&
+                    currentPlayer === "O"
+                ) {
+                    setTimeout(aiMove, 500);
                 }
             }
 
-            if (roundWon) {
-                statusElement.innerText = `Player ${currentPlayer} Wins!`;
-                gameActive = false;
-                saveGame();
-                return;
+            function makeMove(index) {
+                boardState[index] = currentPlayer;
+                const cell = document.querySelector(`[data-index="${index}"]`);
+                cell.innerText = currentPlayer;
+                cell.classList.add("taken");
+
+                checkResult();
             }
 
-            if (!boardState.includes("")) {
-                statusElement.innerText = "It's a Draw!";
-                gameActive = false;
-                saveGame();
-                return;
+            function checkResult() {
+                let roundWon = false;
+
+                for (let condition of winningConditions) {
+                    let a = boardState[condition[0]];
+                    let b = boardState[condition[1]];
+                    let c = boardState[condition[2]];
+
+                    if (a === "" || b === "" || c === "") continue;
+
+                    if (a === b && b === c) {
+                        roundWon = true;
+                        break;
+                    }
+                }
+
+                if (roundWon) {
+                    statusElement.innerText = `Player ${currentPlayer} Wins!`;
+                    gameActive = false;
+                    saveGame();
+                    return;
+                }
+
+                if (!boardState.includes("")) {
+                    statusElement.innerText = "It's a Draw!";
+                    gameActive = false;
+                    saveGame();
+                    return;
+                }
+
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                statusElement.innerText = `Player ${currentPlayer}'s Turn`;
             }
 
-            currentPlayer = currentPlayer === "X" ? "O" : "X";
-            statusElement.innerText = `Player ${currentPlayer}'s Turn`;
-        }
+            async function saveGame() {
+                // CP05: Post results to /save-game endpoint
+                const payload = {
+                    board: boardState,
+                    winner: currentPlayer,
+                    mode: document.getElementById("game-mode").value,
+                };
 
-        async function saveGame() {
-            // CP05: Post results to /save-game endpoint
-            const payload = {
-                board: boardState,
-                winner: currentPlayer,
-                mode: document.getElementById('game-mode').value
-            };
-            console.log("Saving game data...", payload);
-            // fetch('/save-game', { method: 'POST', body: JSON.stringify(payload) });
-        }
+                console.log("Saving game data...", payload);
+                // fetch('/save-game', { method: 'POST', body: JSON.stringify(payload) });
+            }
 
-        function resetGame() {
-            boardState = ["", "", "", "", "", "", "", "", ""];
-            gameActive = true;
-            currentPlayer = "X";
-            statusElement.innerText = "Player X's Turn";
-            document.querySelectorAll('.cell').forEach(cell => {
-                cell.innerText = "";
-                cell.classList.remove('taken');
-            });
-        }
+            function resetGame() {
+                boardState = ["", "", "", "", "", "", "", "", ""];
+                gameActive = true;
+                currentPlayer = "X";
+                statusElement.innerText = "Player X's Turn";
 
-        const aiCommentEl = document.getElementById('ai-comment');
-
-        async function aiMove() {
-            aiCommentEl.innerText = "AI is thinking…";
-            try {
-                const res = await fetch('/api/ai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        board: boardState,
-                        difficulty: 'medium',
-                        personality: 'sassy'
-                    })
+                document.querySelectorAll(".cell").forEach((cell) => {
+                    cell.innerText = "";
+                    cell.classList.remove("taken");
                 });
-                const data = await res.json();
-                aiCommentEl.innerText = data.comment || "";
-                if (typeof data.move === 'number' && data.move >= 0 && boardState[data.move] === "") {
-                    makeMove(data.move);
-                }
-            } catch (err) {
-                console.error(err);
-                aiCommentEl.innerText = "AI failed to respond.";
             }
-        }
 
-        boardElement.addEventListener('click', handleCellClick);
-    </script>
-</body>
+            const aiCommentEl = document.getElementById("ai-comment");
+
+            async function aiMove() {
+                aiCommentEl.innerText = "AI is thinking…";
+
+                try {
+                    const res = await fetch("/api/ai", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            board: boardState,
+                            difficulty: "medium",
+                            personality: "sassy",
+                        }),
+                    });
+
+                    const data = await res.json();
+                    aiCommentEl.innerText = data.comment || "";
+
+                    if (
+                        typeof data.move === "number" &&
+                        data.move >= 0 &&
+                        boardState[data.move] === ""
+                    ) {
+                        makeMove(data.move);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    aiCommentEl.innerText = "AI failed to respond.";
+                }
+            }
+
+            boardElement.addEventListener("click", handleCellClick);
+        </script>
+    </body>
 </html>
