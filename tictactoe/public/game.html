@@ -124,13 +124,13 @@
                 if (winner && winner !== "tie") {
                     statusElement.innerText = `Player ${currentPlayer} Wins!`;
                     gameActive = false;
-                    saveGame();
+                    saveGame(currentPlayer);
                     return;
                 }
                 if (!boardState.includes("")) {
                     statusElement.innerText = "It's a Draw!";
                     gameActive = false;
-                    saveGame();
+                    saveGame("draw");
                     return;
                 }
                 currentPlayer = currentPlayer === "X" ? "O" : "X";
@@ -225,13 +225,28 @@
                 return board.includes("") ? null : "tie";
             }
 
-            async function saveGame() {
+            async function saveGame(winner) {
+                const mode = document.getElementById("game-mode").value;
                 const payload = {
                     board: boardState,
-                    winner: currentPlayer,
-                    mode: document.getElementById("game-mode").value
+                    winner,
+                    mode,
+                    difficulty: mode === "pva" ? document.getElementById("ai-difficulty").value : null,
+                    personality: mode === "pva" ? document.getElementById("ai-personality").value : null,
+                    username: localStorage.getItem("username") || null,
                 };
-                console.log("Game Saved", payload);
+                try {
+                    const res = await fetch("/api/games/save", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    });
+                    const data = await res.json();
+                    if (!data.success) console.error("Save failed:", data.message);
+                    else console.log("Game saved:", data.game.id);
+                } catch (err) {
+                    console.error("Save network error:", err);
+                }
             }
 
             function resetGame() {

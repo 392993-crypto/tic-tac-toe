@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const authRoutes = require('./routes/auth');
 const aiRoutes = require('./routes/ai');
+const gamesRoutes = require('./routes/games');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ if (!fs.existsSync(usersFilePath)) fs.writeFileSync(usersFilePath, JSON.stringif
 
 app.use('/', authRoutes);
 app.use('/', aiRoutes);
+app.use('/', gamesRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
