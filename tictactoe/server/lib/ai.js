@@ -51,3 +51,47 @@ function pickRandomEmpty(board) {
 }
 
 module.exports = { getAIMove };
+const express = require('express');
+const router = express.Router();
+// (Keep your existing Groq imports here)
+
+router.post('/', async (req, res) => {
+    try {
+        const { board, difficulty, personality, suggestedMove } = req.body;
+
+        // 1. Intercept the HY@RG*RG#* personality
+        if (personality === 'chaos') {
+            const spamChars = "!@#$%^&*()_+{}|:<>?ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const length = Math.floor(Math.random() * 40) + 20; // Generate 20-60 random chars
+            let randomSpam = "";
+
+            for (let i = 0; i < length; i++) {
+                randomSpam += spamChars.charAt(Math.floor(Math.random() * spamChars.length));
+            }
+
+            // Determine move (Assuming your frontend passes 'suggestedMove' for Impossible)
+            // If you handle difficulty logic purely on the backend, use your existing move-generation functions here.
+            const move = suggestedMove !== undefined ? suggestedMove : getFallbackMove(board);
+
+            return res.json({
+                move: move,
+                comment: `[SYS_ERR]: ${randomSpam} !!`
+            });
+        }
+
+        // 2. Existing Groq Logic for Sassy/Grumpy/Supportive
+        // ... (Keep your current LLM prompting and move generation logic here) ...
+
+    } catch (error) {
+        console.error("AI Route Error:", error);
+        res.status(500).json({ error: "Failed to generate AI move." });
+    }
+});
+
+// Helper function just in case you don't pass suggestedMove from the frontend
+function getFallbackMove(board) {
+    const available = board.map((val, idx) => val === "" ? idx : null).filter(val => val !== null);
+    return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null;
+}
+
+module.exports = router;

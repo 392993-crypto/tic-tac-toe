@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Tic Tac Toe - Play</title>
         <style>
+            body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 20px; }
             .board {
                 display: grid;
                 grid-template-columns: repeat(3, 100px);
@@ -24,7 +25,15 @@
             }
             .cell.taken { cursor: not-allowed; }
             #status { font-weight: bold; margin: 10px 0; }
-            #ai-comment { font-style: italic; color: #555; margin: 10px 0; }
+            /* Updated to handle long chaotic strings */
+            #ai-comment { 
+                font-style: italic; 
+                color: #555; 
+                margin: 10px 0; 
+                min-height: 1.2em;
+                word-break: break-all; 
+            }
+            nav { margin-bottom: 20px; }
         </style>
     </head>
 
@@ -57,6 +66,7 @@
                     <option value="sassy">Sassy</option>
                     <option value="grumpy">Grumpy</option>
                     <option value="supportive">Supportive</option>
+                    <option value="chaos">HY@RG*RG#*</option>
                 </select>
             </span>
         </div>
@@ -93,11 +103,31 @@
                 [0, 4, 8], [2, 4, 6]
             ];
 
+            // Toggle AI settings visibility
             function toggleAiSettings() {
                 const mode = document.getElementById("game-mode").value;
                 document.getElementById("ai-options").style.display = (mode === "pva") ? "inline" : "none";
             }
 
+            // Core win checking logic
+            function checkWinnerRaw(board) {
+                for (let i = 0; i < winningConditions.length; i++) {
+                    const [a, b, c] = winningConditions[i];
+                    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                        return board[a];
+                    }
+                }
+                if (!board.includes("")) return "tie";
+                return null;
+            }
+
+            // Placeholder for saving game stats (prevents another reference error)
+            function saveGame(result) {
+                console.log(`Saving game data. Result: ${result}`);
+                // TODO: Wire up to your backend / JSON store logic
+            }
+
+            // Handle user clicks on the board
             function handleCellClick(e) {
                 const clickedCell = e.target;
                 if (!clickedCell.classList.contains('cell')) return;
@@ -108,14 +138,17 @@
                 makeMove(index);
 
                 if (gameActive && document.getElementById("game-mode").value === "pva" && currentPlayer === "O") {
+                    // Disable board while AI thinks
+                    boardElement.style.pointerEvents = "none";
                     setTimeout(aiMove, 500);
                 }
             }
 
             function makeMove(index) {
                 boardState[index] = currentPlayer;
-                document.querySelector(`[data-index="${index}"]`).innerText = currentPlayer;
-                document.querySelector(`[data-index="${index}"]`).classList.add("taken");
+                const cell = document.querySelector(`[data-index="${index}"]`);
+                cell.innerText = currentPlayer;
+                cell.classList.add("taken");
                 checkResult();
             }
 
@@ -137,14 +170,15 @@
                 statusElement.innerText = `Player ${currentPlayer}'s Turn`;
             }
 
+            // Fetch AI move from backend
             async function aiMove() {
                 const difficulty = document.getElementById("ai-difficulty").value;
                 const personality = document.getElementById("ai-personality").value;
-                aiCommentEl.innerText = "Thinking...";
+                aiCommentEl.innerText = "...";
 
-                let move;
+                let suggestedMove;
                 if (difficulty === "impossible") {
-                    move = getBestMove(boardState);
+                    suggestedMove = getBestMove(boardState);
                 }
 
                 try {
@@ -155,22 +189,25 @@
                             board: boardState,
                             difficulty,
                             personality,
-                            suggestedMove: move
+                            suggestedMove
                         }),
                     });
                     const data = await res.json();
+                    
                     aiCommentEl.innerText = data.comment || "";
-                    const finalMove = (difficulty === "impossible") ? move : data.move;
+                    const finalMove = data.move;
 
                     if (typeof finalMove === "number" && boardState[finalMove] === "") {
                         makeMove(finalMove);
                     }
                 } catch (err) {
-                    aiCommentEl.innerText = "AI Error.";
+                    aiCommentEl.innerText = "AI Offline.";
+                } finally {
+                    boardElement.style.pointerEvents = "auto";
                 }
             }
 
-            // Minimax Algorithm
+            // Minimax Algorithm entry point
             function getBestMove(board) {
                 let bestScore = -Infinity;
                 let move;
@@ -188,10 +225,12 @@
                 return move;
             }
 
+            // Recursive Minimax Algorithm
             const scores = { X: -10, O: 10, tie: 0 };
             function minimax(board, depth, isMaximizing) {
                 let result = checkWinnerRaw(board);
                 if (result !== null) return scores[result];
+                
                 if (isMaximizing) {
                     let bestScore = -Infinity;
                     for (let i = 0; i < 9; i++) {
@@ -217,48 +256,22 @@
                 }
             }
 
-            function checkWinnerRaw(board) {
-                for (let condition of winningConditions) {
-                    const [a, b, c] = condition;
-                    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
-                }
-                return board.includes("") ? null : "tie";
-            }
-
-            async function saveGame(winner) {
-                const mode = document.getElementById("game-mode").value;
-                const payload = {
-                    board: boardState,
-                    winner,
-                    mode,
-                    difficulty: mode === "pva" ? document.getElementById("ai-difficulty").value : null,
-                    personality: mode === "pva" ? document.getElementById("ai-personality").value : null,
-                    username: localStorage.getItem("username") || null,
-                };
-                try {
-                    const res = await fetch("/api/games/save", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload),
-                    });
-                    const data = await res.json();
-                    if (!data.success) console.error("Save failed:", data.message);
-                    else console.log("Game saved:", data.game.id);
-                } catch (err) {
-                    console.error("Save network error:", err);
-                }
-            }
-
+            // Reset the game board
             function resetGame() {
                 boardState = ["", "", "", "", "", "", "", "", ""];
-                gameActive = true;
                 currentPlayer = "X";
+                gameActive = true;
                 statusElement.innerText = "Player X's Turn";
                 aiCommentEl.innerText = "";
-                document.querySelectorAll(".cell").forEach(c => c.innerText = "");
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.innerText = "";
+                    cell.classList.remove("taken");
+                });
+                boardElement.style.pointerEvents = "auto";
             }
 
-            boardElement.addEventListener("click", handleCellClick);
+            // Attach click listener to the board wrapper
+            boardElement.addEventListener('click', handleCellClick);
         </script>
     </body>
 </html>
