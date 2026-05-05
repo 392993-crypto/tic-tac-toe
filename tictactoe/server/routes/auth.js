@@ -35,6 +35,11 @@ router.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const user = getUsers().find(u => u.username === username && u.password === password);
     if (!user) return res.status(401).json({ message: 'Invalid username or password.' });
+    
+    // Set session
+    req.session.username = user.username;
+    req.session.loggedIn = true;
+    
     res.json({ message: 'Login successful', username: user.username });
 });
 
@@ -43,6 +48,11 @@ router.post('/login', (req, res) => {
     const { username, password } = req.body;
     const user = getUsers().find(u => u.username === username && u.password === password);
     if (!user) return res.redirect('/login.html?error=1');
+    
+    // Set session
+    req.session.username = user.username;
+    req.session.loggedIn = true;
+    
     res.redirect('/game.html');
 });
 
@@ -57,6 +67,15 @@ router.post('/register', (req, res) => {
     users.push({ username, password });
     saveUsers(users);
     res.redirect('/login.html');
+});
+
+// Check if user is logged in
+router.get('/api/check-auth', (req, res) => {
+    if (req.session && req.session.username) {
+        res.json({ loggedIn: true, username: req.session.username });
+    } else {
+        res.json({ loggedIn: false });
+    }
 });
 
 module.exports = router;
