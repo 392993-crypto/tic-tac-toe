@@ -1,10 +1,10 @@
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 // Local AI implementation for when Groq API is not available
-function getLocalAIMove(boardState, difficulty, personality) {
-    // For impossible difficulty, use minimax algorithm
+function getLocalAIMove(boardState, difficulty, personality, suggestedMove) {
+    // For impossible difficulty, use minimax algorithm or suggested move
     if (difficulty === 'impossible') {
-        const move = getBestMove(boardState);
+        const move = suggestedMove !== undefined ? suggestedMove : getBestMove(boardState);
         return {
             move: move,
             comment: getPersonalityComment(personality, move, boardState)
@@ -128,10 +128,10 @@ function pickRandomEmpty(board) {
     return empty.length ? empty[Math.floor(Math.random() * empty.length)] : -1;
 }
 
-async function getAIMove(boardState, difficulty = 'medium', personality = 'neutral') {
+async function getAIMove(boardState, difficulty = 'medium', personality = 'neutral', suggestedMove) {
     // If no API key, use local AI
     if (!GROQ_API_KEY) {
-        return getLocalAIMove(boardState, difficulty, personality);
+        return getLocalAIMove(boardState, difficulty, personality, suggestedMove);
     }
 
     const groqEndpoint = "https://api.groq.com/openai/v1/chat/completions";
@@ -158,7 +158,7 @@ async function getAIMove(boardState, difficulty = 'medium', personality = 'neutr
         if (!response.ok) {
             const errText = await response.text();
             console.error("Groq error:", response.status, errText);
-            return getLocalAIMove(boardState, difficulty, personality);
+            return getLocalAIMove(boardState, difficulty, personality, suggestedMove);
         }
 
         const data = await response.json();
@@ -170,7 +170,7 @@ async function getAIMove(boardState, difficulty = 'medium', personality = 'neutr
         return parsed;
     } catch (error) {
         console.error("Error communicating with AI:", error);
-        return getLocalAIMove(boardState, difficulty, personality);
+        return getLocalAIMove(boardState, difficulty, personality, suggestedMove);
     }
 }
 
