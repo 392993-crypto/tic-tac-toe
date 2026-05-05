@@ -36,9 +36,9 @@ router.post('/api/login', (req, res) => {
     const user = getUsers().find(u => u.username === username && u.password === password);
     if (!user) return res.status(401).json({ message: 'Invalid username or password.' });
     
-    // Set session
-    req.session.username = user.username;
-    req.session.loggedIn = true;
+    // Set cookies
+    res.cookie('loggedIn', 'true', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+    res.cookie('username', username, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
     
     res.json({ message: 'Login successful', username: user.username });
 });
@@ -49,9 +49,9 @@ router.post('/login', (req, res) => {
     const user = getUsers().find(u => u.username === username && u.password === password);
     if (!user) return res.redirect('/login.html?error=1');
     
-    // Set session
-    req.session.username = user.username;
-    req.session.loggedIn = true;
+    // Set cookies
+    res.cookie('loggedIn', 'true', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+    res.cookie('username', username, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
     
     res.redirect('/game.html');
 });
@@ -71,8 +71,8 @@ router.post('/register', (req, res) => {
 
 // Check if user is logged in
 router.get('/api/check-auth', (req, res) => {
-    if (req.session && req.session.username) {
-        res.json({ loggedIn: true, username: req.session.username });
+    if (req.cookies && req.cookies.loggedIn === 'true') {
+        res.json({ loggedIn: true, username: req.cookies.username });
     } else {
         res.json({ loggedIn: false });
     }
