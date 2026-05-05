@@ -1,51 +1,64 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Tic Tac Toe - Play</title>
-        <style>
-            body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 20px; }
-            .board {
-                display: grid;
-                grid-template-columns: repeat(3, 100px);
-                grid-gap: 10px;
-                margin: 20px 0;
-            }
-            .cell {
-                width: 100px;
-                height: 100px;
-                background: #f0f0f0;
-                border: 2px solid #333;
-                font-size: 2.5rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-            }
-            .cell.taken { cursor: not-allowed; }
-            #status { font-weight: bold; margin: 10px 0; }
-            /* Updated to handle long chaotic strings */
-            #ai-comment { 
-                font-style: italic; 
-                color: #555; 
-                margin: 10px 0; 
-                min-height: 1.2em;
-                word-break: break-all; 
-            }
-            nav { margin-bottom: 20px; }
-        </style>
-    </head>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic Tac Toe - Play</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 20px; }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            margin: 20px 0;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: #f0f0f0;
+            border: 2px solid #333;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .cell.taken { cursor: not-allowed; }
+        #status { font-weight: bold; margin: 10px 0; }
+        #ai-comment { 
+            font-style: italic; 
+            color: #555; 
+            margin: 10px 0; 
+            min-height: 1.2em;
+            word-break: break-all; 
+        }
+        nav { margin-bottom: 20px; }
+        .auth-message {
+            padding: 20px;
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #d32f2f;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
 
-    <body>
-        <nav>
-            <a href="dashboard.html">Dashboard</a> |
-            <a href="leaderboard.html">Leaderboard</a> |
-            <a href="/logout">Logout</a>
-        </nav>
+<body>
+    <nav>
+        <a href="dashboard.html">Dashboard</a> |
+        <a href="leaderboard.html">Leaderboard</a> |
+        <a href="/logout">Logout</a>
+    </nav>
 
-        <h1>!Tic Tac Toe!</h1>
+    <h1>!Tic Tac Toe!</h1>
 
+    <div id="auth-check" class="auth-message" style="display: none;">
+        Please <a href="login.html">login</a> to play.
+    </div>
+
+    <div id="game-content" style="display: none;">
         <div id="game-settings">
             <label>Mode:</label>
             <select id="game-mode" onchange="toggleAiSettings()">
@@ -87,22 +100,52 @@
         </div>
 
         <button onclick="resetGame()">Reset Game</button>
+    </div>
 
-        <script>
-            let boardState = ["", "", "", "", "", "", "", "", ""];
-            let currentPlayer = "X";
-            let gameActive = true;
+    <script>
+        let boardState = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameActive = true;
 
-            const boardElement = document.getElementById("board");
-            const statusElement = document.getElementById("status");
-            const aiCommentEl = document.getElementById("ai-comment");
+        const boardElement = document.getElementById("board");
+        const statusElement = document.getElementById("status");
+        const aiCommentEl = document.getElementById("ai-comment");
+        const gameContent = document.getElementById("game-content");
+        const authCheck = document.getElementById("auth-check");
 
-            const winningConditions = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8],
-                [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                [0, 4, 8], [2, 4, 6]
-            ];
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
 
+        // Check authentication on page load
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth', { credentials: 'include' });
+                const data = await response.json();
+                
+                if (data.loggedIn) {
+                    authCheck.style.display = 'none';
+                    gameContent.style.display = 'block';
+                    initializeGame();
+                } else {
+                    authCheck.style.display = 'block';
+                    gameContent.style.display = 'none';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }
+            } catch (err) {
+                authCheck.style.display = 'block';
+                gameContent.style.display = 'none';
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+        }
+
+        function initializeGame() {
             // Toggle AI settings visibility
             function toggleAiSettings() {
                 const mode = document.getElementById("game-mode").value;
@@ -121,10 +164,9 @@
                 return null;
             }
 
-            // Placeholder for saving game stats (prevents another reference error)
+            // Placeholder for saving game stats
             function saveGame(result) {
-                console.log(`Saving game data. Result: ${result}`);
-                // TODO: Wire up to your backend / JSON store logic
+                console.log("Saving game data. Result: " + result);
             }
 
             // Handle user clicks on the board
@@ -138,7 +180,6 @@
                 makeMove(index);
 
                 if (gameActive && document.getElementById("game-mode").value === "pva" && currentPlayer === "O") {
-                    // Disable board while AI thinks
                     boardElement.style.pointerEvents = "none";
                     setTimeout(aiMove, 500);
                 }
@@ -146,7 +187,7 @@
 
             function makeMove(index) {
                 boardState[index] = currentPlayer;
-                const cell = document.querySelector(`[data-index="${index}"]`);
+                const cell = document.querySelector('[data-index="' + index + '"]');
                 cell.innerText = currentPlayer;
                 cell.classList.add("taken");
                 checkResult();
@@ -155,7 +196,7 @@
             function checkResult() {
                 let winner = checkWinnerRaw(boardState);
                 if (winner && winner !== "tie") {
-                    statusElement.innerText = `Player ${currentPlayer} Wins!`;
+                    statusElement.innerText = "Player " + currentPlayer + " Wins!";
                     gameActive = false;
                     saveGame(currentPlayer);
                     return;
@@ -167,7 +208,7 @@
                     return;
                 }
                 currentPlayer = currentPlayer === "X" ? "O" : "X";
-                statusElement.innerText = `Player ${currentPlayer}'s Turn`;
+                statusElement.innerText = "Player " + currentPlayer + "'s Turn";
             }
 
             // Fetch AI move from backend
@@ -184,8 +225,8 @@
                 try {
                     const requestBody = {
                         board: boardState,
-                        difficulty,
-                        personality,
+                        difficulty: difficulty,
+                        personality: personality,
                     };
                     if (suggestedMove !== undefined) {
                         requestBody.suggestedMove = suggestedMove;
@@ -195,6 +236,7 @@
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(requestBody),
+                        credentials: 'include'
                     });
                     const data = await res.json();
                     
@@ -267,24 +309,25 @@
                 gameActive = true;
                 statusElement.innerText = "Player X's Turn";
                 aiCommentEl.innerText = "";
-                document.querySelectorAll('.cell').forEach(cell => {
+                document.querySelectorAll('.cell').forEach(function(cell) {
                     cell.innerText = "";
                     cell.classList.remove("taken");
                 });
                 boardElement.style.pointerEvents = "auto";
 
-                // Reset game mode, AI difficulty, and personality
                 document.getElementById("game-mode").value = "pvp";
                 document.getElementById("ai-difficulty").value = "impossible";
                 document.getElementById("ai-personality").value = "sassy";
-                toggleAiSettings(); // Reset visibility of AI options
+                toggleAiSettings();
             }
 
             // Attach click listener to the board wrapper
             boardElement.addEventListener('click', handleCellClick);
+            toggleAiSettings();
+        }
 
-            // Call toggleAiSettings() on page load to set initial visibility
-            window.onload = toggleAiSettings;
-        </script>
-    </body>
+        // Check auth when page loads
+        checkAuth();
+    </script>
+</body>
 </html>
