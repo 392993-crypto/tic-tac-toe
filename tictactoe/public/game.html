@@ -182,15 +182,19 @@
                 }
 
                 try {
+                    const requestBody = {
+                        board: boardState,
+                        difficulty,
+                        personality,
+                    };
+                    if (suggestedMove !== undefined) {
+                        requestBody.suggestedMove = suggestedMove;
+                    }
+
                     const res = await fetch("/api/ai", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            board: boardState,
-                            difficulty,
-                            personality,
-                            suggestedMove
-                        }),
+                        body: JSON.stringify(requestBody),
                     });
                     const data = await res.json();
                     
@@ -268,10 +272,19 @@
                     cell.classList.remove("taken");
                 });
                 boardElement.style.pointerEvents = "auto";
+
+                // Reset game mode, AI difficulty, and personality
+                document.getElementById("game-mode").value = "pvp";
+                document.getElementById("ai-difficulty").value = "impossible";
+                document.getElementById("ai-personality").value = "sassy";
+                toggleAiSettings(); // Reset visibility of AI options
             }
 
             // Attach click listener to the board wrapper
             boardElement.addEventListener('click', handleCellClick);
+
+            // Call toggleAiSettings() on page load to set initial visibility
+            window.onload = toggleAiSettings;
         </script>
     </body>
 </html>
