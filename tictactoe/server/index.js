@@ -15,7 +15,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000, httpOnly: true }
 }));
 
 // Enable CORS for all routes
@@ -25,7 +25,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public')));
 
 const dataDir = path.join(__dirname, 'data');
 const usersFilePath = path.join(dataDir, 'users.json');
@@ -45,20 +44,20 @@ const requireAuth = (req, res, next) => {
     res.redirect('/login.html');
 };
 
-// Public routes (no auth required)
+// Public routes - no authentication required
 app.use('/login.html', express.static(path.join(__dirname, '../public/login.html')));
 app.use('/register.html', express.static(path.join(__dirname, '../public/register.html')));
 app.use('/css/', express.static(path.join(__dirname, '../public/css')));
 app.use('/js/', express.static(path.join(__dirname, '../public/js')));
 
-// Auth routes (login/register/logout)
+// Auth routes (login/register/logout) - these set the session
 app.use('/', authRoutes);
 
-// Protected routes (require authentication)
-app.use('/', requireAuth, aiRoutes);
-app.use('/', requireAuth, gamesRoutes);
+// Protected routes - require authentication
+app.use('/api/ai', requireAuth, aiRoutes);
+app.use('/api/games', requireAuth, gamesRoutes);
 
-// Serve game.html and other protected pages
+// Protected HTML pages
 app.get('/game.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, '../public/game.html'));
 });
@@ -77,10 +76,20 @@ app.get('/stats.html', requireAuth, (req, res) => {
 
 // Logout route
 app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login.html');
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        res.redirect('/login.html');
+    });
 });
 
+// Serve index.html publicly (dev menu)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Start server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
