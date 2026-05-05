@@ -30,3 +30,6 @@ externalPort = 8081
 [[ports]]
 localPort = 20958
 externalPort = 3000
+
+[run]
+command = "node tictactoe/server/index.js"
