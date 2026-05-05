@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const aiRoutes = require('./routes/ai');
 const gamesRoutes = require('./routes/games');
@@ -8,6 +9,8 @@ const gamesRoutes = require('./routes/games');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Enable CORS for all routes
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
