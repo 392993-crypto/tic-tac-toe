@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const authRoutes = require('./routes/auth');
@@ -7,6 +8,12 @@ const gamesRoutes = require('./routes/games');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Add CORS middleware to handle cross-origin requests
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
