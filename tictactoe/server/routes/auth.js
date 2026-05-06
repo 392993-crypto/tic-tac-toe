@@ -15,7 +15,7 @@ const saveUsers = (users) => {
     fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
 };
 
-// JSON API: register (used by register.js fetch)
+// JSON API: register
 router.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -30,33 +30,23 @@ router.post('/api/register', (req, res) => {
     res.status(201).json({ message: 'Registration successful!' });
 });
 
-// JSON API: login
+// JSON API: login - client stores auth in localStorage
 router.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const user = getUsers().find(u => u.username === username && u.password === password);
     if (!user) return res.status(401).json({ message: 'Invalid username or password.' });
-    
-    // Set cookies
-    res.cookie('loggedIn', 'true', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-    res.cookie('username', username, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-    
     res.json({ message: 'Login successful', username: user.username });
 });
 
-// Form POST: /login (used by login.html form action)
+// Form POST: /login
 router.post('/login', (req, res) => {
     const { username, password } = req.body;
     const user = getUsers().find(u => u.username === username && u.password === password);
     if (!user) return res.redirect('/login.html?error=1');
-    
-    // Set cookies
-    res.cookie('loggedIn', 'true', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-    res.cookie('username', username, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-    
     res.redirect('/game.html');
 });
 
-// Form POST: /register (in case any page uses form action="/register")
+// Form POST: /register
 router.post('/register', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.redirect('/register.html?error=1');
@@ -67,15 +57,6 @@ router.post('/register', (req, res) => {
     users.push({ username, password });
     saveUsers(users);
     res.redirect('/login.html');
-});
-
-// Check if user is logged in
-router.get('/api/check-auth', (req, res) => {
-    if (req.cookies && req.cookies.loggedIn === 'true') {
-        res.json({ loggedIn: true, username: req.cookies.username });
-    } else {
-        res.json({ loggedIn: false });
-    }
 });
 
 module.exports = router;
