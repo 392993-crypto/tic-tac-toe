@@ -1,4 +1,4 @@
-document.getElementById('login-form').addEventListener('submit', async (e) => {
+document.querySelector('.auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
@@ -6,13 +6,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include'
+        body: JSON.stringify(data)
     });
 
     const result = await response.json();
     if (response.ok) {
-        window.location.href = 'game.html';
+        window.location.href = 'tictactoe/public/game.html';
     } else {
         alert(result.message);
     }
